@@ -218,14 +218,36 @@ class SciGlobProcessorGUI(QWidget):
                 )
                 out_path = os.path.join(self.output_dir, out_name)
 
+                # Extract instrument and spectrometer numbers from L0 filename
+                l0_basename = os.path.basename(path)
+                # Expected format: Pandora209s1_Izana_*
+                instrument_num = "209"
+                spectrometer_num = "s1"
+                if "Pandora" in l0_basename:
+                    parts = l0_basename.split("_")
+                    if parts:
+                        prefix = parts[0]  # e.g., "Pandora209s1"
+                        if prefix.startswith("Pandora"):
+                            after_pandora = prefix[7:]  # Remove "Pandora"
+                            for i, c in enumerate(after_pandora):
+                                if c.isalpha():
+                                    instrument_num = after_pandora[:i]
+                                    spectrometer_num = after_pandora[i:]
+                                    break
+
                 write_l1_text(
                     out_path=out_path,
                     l1_records=l1_records,
                     scode=scode,
                     cal_version=cal_ver,
                     cal_date=cal_date,
+                    l0_filename=l0_basename,
+                    instrument_number=instrument_num,
+                    spectrometer_number=spectrometer_num,
+                    wavelengths=cal.wavelength_nm,
                     software_name=APP_NAME,
-                    software_version=APP_VERSION
+                    software_version=APP_VERSION,
+                    proc_version="1-0"
                 )
 
                 self.append_log(
